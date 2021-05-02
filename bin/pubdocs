@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Exit with error message
+error() {
+    echo Error: $1
+    popd
+    exit 100
+}
+
+# build with yard
+echo "building docs..."
+echo
+yarn docs || error "failed to build docs"
+
+# copy to docs host
+echo
+echo "copying docs..."
+echo
+rsync -avz --info=progress2 ./docs/* deploy@a01.kb.universablockchain.com:/home/deploy/www/shared/public/system/static/myonclycloud_js || error "failed to copy docs"
+
+echo "done creating unversa gem docs on kb"
