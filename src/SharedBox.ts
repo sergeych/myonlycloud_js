@@ -136,7 +136,7 @@ export class SharedBox {
     const sourceAccessors = source.packedAccessors as unknown as Map<BossObject,Uint8Array>;
     const accessors = Array<{annotation: KeyAnnotation,encryptedKey: Uint8Array}>();
     for( const [k,v] of sourceAccessors ) {
-      // packed key annotation is not exacly in our native format
+      // packed key annotation is not exactly in our native format
       accessors.push({annotation: deserializeKeyAnnotation(k),encryptedKey: v});
     }
     return new SharedBox(accessors, source.encryptedPayload as Uint8Array);

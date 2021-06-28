@@ -1,8 +1,16 @@
 
 let defaultTestMode = false;
 
-if( window && window?.location?.hostname.startsWith("localhost"))
-  defaultTestMode = true;
+// try {
+  if (window && window?.location?.hostname.startsWith("localhost"))
+    defaultTestMode = true;
+// }
+// catch(e) {
+//   if( e instanceof ReferenceError )
+//     defaultTestMode = false
+//   else
+//     throw e
+// }
 
 let overrideTestMode: boolean | undefined;
 

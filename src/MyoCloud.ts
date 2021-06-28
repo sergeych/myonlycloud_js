@@ -8,23 +8,21 @@ import {
   RootConnection,
   Session
 } from "uparsecjs";
-import { encode64, KeyAddress, PrivateKey, SignedRecord } from "unicrypto";
+import { KeyAddress, PrivateKey, SignedRecord } from "unicrypto";
 import { Emitter, EmitterEventListener } from "uparsecjs/dist/Emitter";
 import { Credentials } from "./Credentials";
 import { ExpiringValue } from "./ExpiringValue";
-import { AnnotatedKey, hashDigest, hashDigest64, hashDigest64Compact } from "./AnnotatedKey";
+import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
 import { MyoElement } from "./MyoElement";
 import { Registry } from "./Registry";
-import { MagickRecord } from "./MagickRecord";
 import { CloudElement } from "./CloudData";
 import { CloudObject } from "./CloudObject";
 import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { Inbox, InboxDefinitionRecord } from "./Inbox";
 import { Config } from "./Config";
-import { SharedBox } from "./SharedBox";
 
-// const LOCALSERVICE = "http://localhost:8094"
-const LOCALSERVICE = "https://myonly.cloud";
+const LOCALSERVICE = "http://localhost:8094"
+// const LOCALSERVICE = "https://myonly.cloud";
 const CLOUDSERVICE = "https://myonly.cloud";
 
 const serviceKeyAddress =
@@ -35,22 +33,6 @@ export type MyoEventType = "connected" | "disconnected" | "loggedIn" | "loggedOu
 export interface MyoEvent {
   type: MyoEventType;
   cloud: MyoCloud;
-}
-
-export class Test11 {
-  private foo2: string;
-
-  constructor(private field: string) {
-    this.foo2 = "11";
-  }
-
-  get foo(): string {
-    return "bar";
-  }
-
-  get xx(): boolean | undefined {
-    return false;
-  }
 }
 
 export class MyoCloud implements PConnection {
@@ -111,12 +93,13 @@ export class MyoCloud implements PConnection {
     }
     this.lastLogin = new CachedStoredValue(store, "lastLogin");
     this.rootConnection = new RootConnection(root);
-    const kap = (refresh: boolean) => {
+    const kap = (_refresh: boolean) => {
       const address = params.testMode ?
         [new KeyAddress("Jmw1hQVroBHhk3Lss3Et8CTSRg3mY9j8R494ZRUvXYcvMhP5XLiV16fhh4KgRgpWZ1t7MkAv").bytes]
         : [serviceKeyAddress];
       return Promise.resolve(address);
     };
+    Session.debugLogger = (...str) => { console.log("SESS::", ...str); }
     this.session = new Session(
       store,
       this.rootConnection,
@@ -126,13 +109,14 @@ export class MyoCloud implements PConnection {
     this.tryRestoreSession();
   }
 
-  traceCalls = false
+  traceCalls = true;
 
   async call(method: string, params: BossObject = {}): Promise<BossObject> {
     // TODO: catch and process connection errors
-    if (this.traceCalls) console.log(`>> ${method}`, params)
+    if (this.traceCalls) console.log(`>>> ${method}`, params)
+    if (this.traceCalls) console.log(`||| ${this.session}`)
     const result = await this.session.call(method, params);
-    if (this.traceCalls) console.log("<< ", result);
+    if (this.traceCalls) console.log("<<< ", result);
     return result;
   }
 
@@ -229,11 +213,11 @@ export class MyoCloud implements PConnection {
     console.log("registry is ready");
   }
 
-  private async newPrivateKey(): Promise<PrivateKey> {
+  private static async newPrivateKey(): Promise<PrivateKey> {
     return PrivateKey.generate({ strength: Config.testMode ? 2048 : 8192 });
   }
 
-  private lastPrivateKey: Promise<PrivateKey> = this.newPrivateKey();
+  private lastPrivateKey: Promise<PrivateKey> = MyoCloud.newPrivateKey();
 
   /**
    * Get currently (being) generated new private key of default strength and start generating new one,
@@ -241,7 +225,7 @@ export class MyoCloud implements PConnection {
    */
   async nextPrivateKey(): Promise<PrivateKey> {
     const k = this.lastPrivateKey;
-    this.newPrivateKey();
+    MyoCloud.newPrivateKey();
     return k;
   }
 
@@ -324,7 +308,7 @@ export class MyoCloud implements PConnection {
     if (!useLogin)
       throw new MyoCloud.IllegalState("can't restore login key: no saved login. please login first.")
 
-    if (this.lastLogin.value && this.lastLogin.value != useLogin)
+    if (this.lastLogin?.value && this.lastLogin.value != useLogin)
       throw new MyoCloud.Exception("Forbidden: this method only restores own login key");
 
     const result = await this.call("requestSignInKey", {
