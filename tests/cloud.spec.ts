@@ -3,12 +3,16 @@ import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
 import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
 import { AnnotatedKey } from "../src/AnnotatedKey";
-import { RemoteException, RootConnection, Session, timeout } from "uparsecjs";
+import { RootConnection, Session } from "uparsecjs";
+
+function getServiceAddress(useLocal: boolean=false): string {
+  return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
+}
 
 describe('cloudservice', () => {
 
   function createSession(useLocal=false) {
-    const serviceAddress = useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
+    const serviceAddress = getServiceAddress(useLocal);
     return new MyoCloud(new MemorySessionStorage(), {
       serviceAddress, testMode: true
     });
@@ -19,7 +23,7 @@ describe('cloudservice', () => {
   it("login with no session", async () => {
     jest.setTimeout(15_000)
     const cloud = new MyoCloud(new MemorySessionStorage(), {
-      serviceAddress: "http://localhost:8094/api/p1", testMode: true
+      serviceAddress: getServiceAddress(), testMode: true
     });
     expect(cloud.isLoggedIn).toBeUndefined();
     expect(cloud.hasSavedLogin).toBe(false);
@@ -76,7 +80,7 @@ describe('cloudservice', () => {
   it("handles properly invalid session connections", async() => {
     const rc = new RootConnection("http://localhost:9876/api/p1");
     try {
-      const res = await rc.call("check");
+      await rc.call("check");
       fail("it should throw exception");
     }
     catch(e) {
@@ -85,7 +89,7 @@ describe('cloudservice', () => {
     const session = new Session(
       new MemorySessionStorage(),
       rc,
-      (r) => Promise.resolve([]),
+      () => Promise.resolve([]),
       true,
       2048
     );
