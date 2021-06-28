@@ -1,13 +1,10 @@
-import { MapSerializable, MapSerializer } from "./MapSerializer";
-import { StoredElement } from "./EncryptedDB";
+import { MapSerializer } from "./MapSerializer";
 import { SharedBox } from "./SharedBox";
 import { MagickRecord } from "./MagickRecord";
-import ownKeys = Reflect.ownKeys;
-import { Boss, encode64, SignedRecord } from "unicrypto";
-import { AnnotatedKeyring } from "./AnnotatedKeyring";
+import { SignedRecord } from "unicrypto";
 import { CloudElement } from "./CloudData";
-import { binaryDump } from "uparsecjs/dist/dumps";
 import { MyoCloud } from "./MyoCloud";
+import ownKeys = Reflect.ownKeys;
 
 export interface StrategyOverride {
   strategy: "override";
@@ -43,7 +40,7 @@ export class CloudObject<T> {
 
   private _data?: T;
   private _sharedBox?: SharedBox;
-  private _element?: StoredElement;
+  private _element?: CloudElement;
   private _signedRecord?: SignedRecord;
   private _service?: MyoCloud;
 
