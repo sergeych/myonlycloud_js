@@ -4,6 +4,7 @@ import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
 import { AnnotatedKey } from "../src/AnnotatedKey";
 import { RootConnection, Session } from "uparsecjs";
+import * as fs from "fs";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
@@ -61,6 +62,24 @@ describe('cloudservice', () => {
     }
   })
 
+  /*
+   * Explanation. Older account use different encryption scheme that is not yet implemented in this library
+   * and may not be at all as there seems to be no account of concern of this type
+   */
+  // it("access old accounts", async () => {
+  //   jest.setTimeout(15000);
+  //   const s = createSession(false);
+  //   Config.testMode = false
+  //   const data = JSON.parse(fs.readFileSync("/Users/sergeych/.testdata/mctestdata.json").toString())
+  //   const acc = data.oldAccount;
+  //   console.log(acc.login);
+  //   await s.login(acc.login, acc.password);
+  //   console.log("well well");
+  //   // await s.login("test_21", "qwert12345.");
+  // //
+  // })
+
+
   it("registers", async() => {
     jest.setTimeout(95000)
     const s: MyoCloud = createSession(false)
@@ -105,7 +124,8 @@ describe('cloudservice', () => {
 
 
 
-  it("ready for obejct loading", async() => {
+
+  // it("ready for obejct loading", async() => {
     // const aa : Record<string,number> = {
     //   kk: 1,
     //   ll: 3
@@ -113,6 +133,6 @@ describe('cloudservice', () => {
     // for( const x in ownKeys(aa)) {
     //   console.log(">> "+x+" -> "+aa[x]);
     // }
-  })
+  // })
 
 })

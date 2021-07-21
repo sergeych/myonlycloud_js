@@ -3,9 +3,10 @@
 # Exit with error message
 error() {
     echo Error: $1
-    popd
     exit 100
 }
+
+error "docs building is not ready"
 
 # build with yard
 echo "building docs..."

@@ -9,7 +9,6 @@ import {
   Session
 } from "uparsecjs";
 import { KeyAddress, PrivateKey, SignedRecord } from "unicrypto";
-import { Emitter, EmitterEventListener } from "uparsecjs/dist/Emitter";
 import { Credentials } from "./Credentials";
 import { ExpiringValue } from "./ExpiringValue";
 import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
@@ -20,6 +19,7 @@ import { CloudObject } from "./CloudObject";
 import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { Inbox, InboxDefinitionRecord } from "./Inbox";
 import { Config } from "./Config";
+import { Emitter, EmitterEventListener, EmitterHandle } from "uparsecjs/dist/Emitter";
 
 const LOCALSERVICE = "http://localhost:8094"
 // const LOCALSERVICE = "https://myonly.cloud";
@@ -34,6 +34,8 @@ export interface MyoEvent {
   type: MyoEventType;
   cloud: MyoCloud;
 }
+
+type RegistrationResult = "OK" | "login_in_use" | "error";
 
 export class MyoCloud implements PConnection {
 
@@ -113,8 +115,8 @@ export class MyoCloud implements PConnection {
 
   async call(method: string, params: BossObject = {}): Promise<BossObject> {
     // TODO: catch and process connection errors
-    if (this.traceCalls) console.log(`>>> ${method}`, params)
-    if (this.traceCalls) console.log(`||| ${this.session}`)
+    if (this.traceCalls) console.log(`>>> ${method}`, params);
+    if (this.traceCalls) console.log("||| ",this.session);
     const result = await this.session.call(method, params);
     if (this.traceCalls) console.log("<<< ", result);
     return result;
@@ -131,7 +133,7 @@ export class MyoCloud implements PConnection {
    * @param lr listener to add.
    * @return listener label used to remove it
    */
-  addListener(lr: EmitterEventListener<MyoEvent>): string {
+  addListener(lr: EmitterEventListener<MyoEvent>): EmitterHandle {
     if (this.lastEvent) lr(this.lastEvent);
     return this.emitter.addListener(lr);
   }
@@ -241,7 +243,7 @@ export class MyoCloud implements PConnection {
    *
    * @throws MyoCloud.IllegalState if it is already logged in (log out first)
    */
-  async register(login: string, password: string, loginKey?: PrivateKey): Promise<"OK" | "login_in_use" | "error"> {
+  async register(login: string, password: string, loginKey?: PrivateKey): Promise<RegistrationResult> {
 
     await this.connected;
     if (this.isLoggedIn)
@@ -320,7 +322,7 @@ export class MyoCloud implements PConnection {
       // TODO: extracto also storage key?
       cloudKeys = await Credentials.decryptCloudKeys(password, result.encryptedKey as Uint8Array)
     } catch (e) {
-      console.error("decrypt cloud key:", e);
+      // console.error("decrypt cloud key:", e);
       throw new MyoCloud.InvalidPassword("failed to decrypt login key");
     }
 

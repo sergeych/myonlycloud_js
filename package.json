@@ -1,7 +1,7 @@
 {
   "name": "myonlycloud",
-  "version": "0.0.1",
-  "description": "myoncly.cloud javascript/typescript interface",
+  "version": "0.0.5",
+  "description": "myonly.cloud javascript/typescript interface",
   "author": "Sergey Chernov <real.sergeych@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
@@ -15,13 +15,13 @@
     "full_build": "tsc && yarn docs",
     "docs": "typedoc --excludePrivate",
     "test": "jest --coverage",
-    "pub": "yarn test && yarn build && yarn publish && bin/pubdocs"
+    "pub": "yarn build && yarn publish && bin/pubdocs"
   },
   "bin": {},
   "dependencies": {
     "isomorphic-fetch": "^3",
     "unicrypto": "^1.5.5",
-    "uparsecjs": "^0.1.8"
+    "uparsecjs": "^0.2.2"
   },
   "devDependencies": {
     "@babel/parser": "^7.14.0",
