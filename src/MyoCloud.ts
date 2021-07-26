@@ -35,7 +35,7 @@ export interface MyoEvent {
   cloud: MyoCloud;
 }
 
-type RegistrationResult = "OK" | "login_in_use" | "error";
+export type RegistrationResult = "OK" | "login_in_use" | "error";
 
 export class MyoCloud implements PConnection {
 
@@ -194,6 +194,7 @@ export class MyoCloud implements PConnection {
    * @throws InvalidPassword
    */
   async login(login: string, password: string) {
+    this.lastLogin.value = null;
     if (this.isLoggedIn) throw new MyoCloud.IllegalState("already logged in, do logout first");
     await this.restoreLoginKey(password, login);
     const loginKey = this.#expiringLoginKey.value;
@@ -213,6 +214,12 @@ export class MyoCloud implements PConnection {
     this.#registry = new Registry(this, this.#storageKey);
     await this.#registry.ready;
     console.log("registry is ready");
+  }
+
+  async logout(): Promise<void> {
+    if( this.isLoggedIn ) {
+      await this.call("signOut");
+    }
   }
 
   private static async newPrivateKey(): Promise<PrivateKey> {
