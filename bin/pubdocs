@@ -6,7 +6,8 @@ error() {
     exit 100
 }
 
-error "docs building is not ready"
+echo "docs building is not ready"
+exit
 
 # build with yard
 echo "building docs..."
