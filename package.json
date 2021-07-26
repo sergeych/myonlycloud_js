@@ -1,6 +1,6 @@
 {
   "name": "myonlycloud",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "myonly.cloud javascript/typescript interface",
   "author": "Sergey Chernov <real.sergeych@gmail.com>",
   "license": "MIT",
@@ -18,6 +18,10 @@
     "pub": "yarn build && yarn publish && bin/pubdocs"
   },
   "bin": {},
+  "entry": {
+    "myocloud": "./src/index.ts",
+    "myocloud.min": "./src/index.ts"
+  },
   "dependencies": {
     "isomorphic-fetch": "^3",
     "unicrypto": "^1.5.5",
