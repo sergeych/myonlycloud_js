@@ -1,5 +1,4 @@
-import { AnnotatedKey, PasswordKeyAnnotation } from "../src/AnnotatedKey";
-import { AnnotatedKeyring } from "../src/AnnotatedKeyring";
+import { AnnotatedKey, AnnotatedKeyring, PasswordKeyAnnotation } from "../src";
 import { decode64, encode64Short, PrivateKey, randomBytes } from "unicrypto";
 import { utf8ToBytes } from "uparsecjs";
 import { PasswordKeyGenerator } from "../src/PasswordKeyGenerator";
