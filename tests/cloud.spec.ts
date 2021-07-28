@@ -3,8 +3,9 @@ import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
 import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
 import { AnnotatedKey } from "../src/AnnotatedKey";
-import { RootConnection, Session } from "uparsecjs";
+import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
 import * as fs from "fs";
+import { CloudElement } from "../src";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
@@ -18,8 +19,6 @@ describe('cloudservice', () => {
       serviceAddress, testMode: true
     });
   }
-
-
 
   it("login with no session", async () => {
     jest.setTimeout(15_000)
@@ -94,6 +93,8 @@ describe('cloudservice', () => {
     await s.clearTestLogin("..foobar");
     const result = await s.register("..foobar", "123123", k.key as PrivateKey);
     expect(result).toBe("OK");
+    s.login("..foobar", "123123");
+    expect(await s.checkConnection()).toBe("loggedIn");
   });
 
   it("handles properly invalid session connections", async() => {
@@ -122,6 +123,36 @@ describe('cloudservice', () => {
     }
   });
 
+  it("creates element by id if not exists", async () => {
+    const s = createSession(false);
+    Config.testMode = false
+    await s.login("test_21", "qwert12345.");
+    const testData = utf8ToBytes("Welcome, cloud");
+    const utag = "theCreationTestTag";
+    const src: CloudElement = {
+      uniqueTag: utag,
+      head: testData
+    };
+    await s.deleteByUniqueTag(utag);
+    let element = await s.tryCreateElement(src);
+    console.log(element);
+    expect(element).not.toBeNull();
+    if( !element ) fail()
+    expect(element?.uniqueTag).toBe(utag);
+    expect(element?.head).toEqual(testData);
+
+    let result = await s.tryCreateElement(src);
+    expect(result).toBeUndefined();
+
+    element.tag1 = "42"
+    await s.updateElement(element);
+
+    const element1 = await s.elementByUniqueTag(element.uniqueTag!);
+    expect(element1?.tag1).toBe(element.tag1)
+
+    s.deleteElements(element1!);
+
+  });
 
 
 

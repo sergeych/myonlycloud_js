@@ -37,6 +37,21 @@ export interface MyoEvent {
 
 export type RegistrationResult = "OK" | "login_in_use" | "error";
 
+/**
+ * Extract element fields from an object that potentially contain more fields
+ * @param element
+ */
+function extractElement(element: CloudElement): CloudElement {
+  return {
+    id: element.id,
+    uniqueTag: element.uniqueTag,
+    tag1: element.tag1,
+    tag2: element.tag2,
+    tag3: element.tag3,
+    head: element.head
+  }
+}
+
 export class MyoCloud implements PConnection {
 
   static Exception = class extends Error {
@@ -116,10 +131,14 @@ export class MyoCloud implements PConnection {
   async call(method: string, params: BossObject = {}): Promise<BossObject> {
     // TODO: catch and process connection errors
     if (this.traceCalls) console.log(`>>> ${method}`, params);
-    if (this.traceCalls) console.log("||| ",this.session);
+    // if (this.traceCalls) console.log("||| ",this.session);
     const result = await this.session.call(method, params);
     if (this.traceCalls) console.log("<<< ", result);
     return result;
+  }
+
+  async callTo<T extends any>(method: string,params: BossObject): Promise<T> {
+    return (await this.call(method,params)) as T;
   }
 
   /**
@@ -351,6 +370,35 @@ export class MyoCloud implements PConnection {
     return element;
   }
 
+  /**
+   * Try to create element. If uniqueTag is provided and the element with such a tag already exists,
+   * returns undefined. Otherwise creates new element or throw exception on network/server failure.
+   */
+  async tryCreateElement(element: CloudElement): Promise<MyoElement|undefined> {
+    try {
+      const result = await this.callTo<{ element?: BossObject }>("createElement", element as unknown as BossObject);
+      if( result.element ) return new MyoElement(this, result.element);
+    }
+    catch(e) {
+      if( e.code !== "unique_tag_exists")
+        console.error(e);
+    }
+    return undefined;
+  }
+
+  async updateElement(element: CloudElement): Promise<void> {
+    await this.call("updateById", extractElement(element) as BossObject);
+  }
+
+  async deleteElements(...elements: CloudElement[]): Promise<void> {
+    const ids = new Array<number>();
+    for( const x of elements) {
+      if( x.id ) ids.push(x.id)
+      else throw new Error("can't delete: element has no id (was not created)")
+    }
+    await this.call("deleteElementsById", {ids});
+  }
+
   async* inboxes(): AsyncGenerator<Inbox, void, unknown> {
     const r = await this.call("Inboxes.all") as unknown as { inboxes: InboxDefinitionRecord[] };
     for (const x of r.inboxes) {
@@ -406,4 +454,31 @@ export class MyoCloud implements PConnection {
     }
   }
 
+  /**
+   * Check connection state. It could be:
+   * - `loggedIn`: parsec session connected, user is logged in in the session
+   * - `loggedOut`: parsec session connected, user is not logged in in the session
+   * - `notConnected`: parsec session is not established or network failure
+   */
+  async checkConnection(): Promise<"loggedIn"|"loggedOut"|"notConnected"> {
+    try {
+      const result = await this.call("check");
+      console.log("Check result", result);
+      return "loggedIn"
+    }
+    catch(e) {
+      if( e.code === "parsec_not_signed_in") return "loggedOut";
+      console.debug("check failed:",e);
+      return "notConnected";
+    }
+  }
+
+  /**
+   * Delete item by the unique tag
+   * @param uniqueTag to delete
+   * @return true if the item was found and deleted and false if the item did not exist
+   */
+  async deleteByUniqueTag(uniqueTag: string): Promise<boolean> {
+    return this.callTo<boolean>("deleteByUniqueTag", {uniqueTag})
+  }
 }

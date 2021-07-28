@@ -1,12 +1,13 @@
 import { trimToSize } from "./StringTools";
 import { MyoCloud } from "./MyoCloud";
 import { BossObject } from "uparsecjs";
+import { CloudElement } from "./CloudData";
 
 function trm(source?: string): string {
   return trimToSize(source, 8)
 }
 
-export class MyoElement {
+export class MyoElement implements CloudElement {
 
   id?: number;
   serial?: number;

@@ -1,17 +1,16 @@
 import { MyoCloud } from "./MyoCloud";
-import { SharedBox } from "./SharedBox";
 import { CompletablePromise, concatenateBinary, utf8ToBytes } from "uparsecjs";
 import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
 import { CaseObject, MapSerializer } from "./MapSerializer";
-import { Boss, encode64 } from "unicrypto";
-import { binaryDump } from "uparsecjs/dist/dumps";
+import { randomBytes } from "unicrypto";
+import { MyoElement } from "./MyoElement";
 
 interface RegistrySource {
   tagsSalt?: Uint8Array;
   keyring: AnnotatedKeyring;
   storageKey: AnnotatedKey;
-};
+}
 
 class RegistryData extends CaseObject {
 
@@ -48,10 +47,11 @@ export class Registry {
       this.registryTag = await MyoCloud.simpleScramble("registry1");
       this.backupRegistryTag = await MyoCloud.simpleScramble("registry1_backup");
       console.log("Looking for registry");
-      const element = await this.cloud.elementByUniqueTag(this.registryTag) ??
+      let element = await this.cloud.elementByUniqueTag(this.registryTag) ??
         await this.cloud.elementByUniqueTag(this.backupRegistryTag);
       if (!element) {
         throw new Error("create registry is not yet implemented");
+        element = await this.createRegistry();
       }
       console.log("found registry element:" + element);
       const packedRegistry = await this.#passwordStorageKey.etaDecrypt(element.head);
@@ -65,6 +65,20 @@ export class Registry {
     catch(e) {
       this.ready.reject(e);
     }
+  }
+
+  private async createRegistry(): Promise<MyoElement> {
+    if( !this.#passwordStorageKey ) throw new Error("storage key must be set");
+    const src = {
+      version: "1.0",
+      source: {
+        tagSalt: randomBytes(32),
+        keyring: new AnnotatedKeyring().addKeys(this.#passwordStorageKey),
+        storageKey: this.#passwordStorageKey
+      }
+    }
+    throw new Error("NOT IMPLEMENTED");
+    // const element = this.cloud.
   }
 
   _mainKeyring?: AnnotatedKeyring;
