@@ -4,8 +4,8 @@ import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
 import { AnnotatedKey } from "../src/AnnotatedKey";
 import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
-import * as fs from "fs";
-import { CloudElement } from "../src";
+import { CloudElement, RegistryData } from "../src";
+import { MapSerializer } from "../src/MapSerializer";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
@@ -78,6 +78,15 @@ describe('cloudservice', () => {
   // //
   // })
 
+  it("serializes registry", async() => {
+    const k = await AnnotatedKey.createPrivate(2048);
+    const rd = RegistryData.createNew(k);
+    console.log(await MapSerializer.serialize(rd));
+    const rd2 = await MapSerializer.fromBoss<RegistryData>(await MapSerializer.toBoss(rd));
+    console.log(rd2);
+    expect(rd2.source.storageKey.annotationLabel).toEqual(rd.source.storageKey.annotationLabel);
+    expect(rd.source.keyring.findKey(k.annotation)).not.toBeUndefined()
+  });
 
   it("registers", async() => {
     jest.setTimeout(95000)
@@ -93,7 +102,8 @@ describe('cloudservice', () => {
     await s.clearTestLogin("..foobar");
     const result = await s.register("..foobar", "123123", k.key as PrivateKey);
     expect(result).toBe("OK");
-    s.login("..foobar", "123123");
+    console.log("----------------------------------------------------- registration -------")
+    await s.login("..foobar", "123123");
     expect(await s.checkConnection()).toBe("loggedIn");
   });
 

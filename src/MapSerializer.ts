@@ -47,16 +47,20 @@ export class MapSerializer {
   }
 
   static registerCaseObject<T extends { new(props: any): CaseObject }>(cls: T, overrideName?: string): void {
-    const name = overrideName ?? cls.prototype.constructor.name;
+    const name = cls.prototype.constructor.name;
     if (!name) throw Error("MapSerialization can't derive name from " + cls);
-    handlers.set(name, {
+    const h = {
       deserialize: async (src) => {
         const props = await deserializeMap(src);
         delete props.$;
         return new cls(props);
       },
-      serialize: instance => serializeMap(instance)
-    })
+      serialize: async instance => {
+        return { ...await serializeMap(instance), $: overrideName ?? name };
+      }
+    };
+    handlers.set(name, h);
+    if( overrideName ) handlers.set(overrideName, h);
   }
 
   static register<T>(name: string, handler: MapSerializationHandler<T>): void {
@@ -146,13 +150,19 @@ export class MapSerializer {
    *
    * @param source
    */
-  static async serialize(source: any): Promise<BossObject> {
+  static async serialize(source: any): Promise<BossObject | BossPrimitive> {
     let result: BossObject | undefined;
     const typeName = source.constructor.name;
     if (typeof (source.toMap) == 'function')
       result = await source.toMap();
+    else if(source instanceof  Uint8Array) {
+      return source;
+    }
     else {
       const handler = handlers.get(source.constructor.name);
+      // console.log("handlers:", handlers);
+      // console.log("handler keys:", handlers.keys());
+      // console.log("source: ",source,"handler:",handler);
       if (!handler)
         result = await serializeMap(source)
         // throw new MapSerializer.Exception("MapSerializer: dont' know how to serialize: " + source.constructor.name);

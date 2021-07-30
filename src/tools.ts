@@ -37,3 +37,25 @@ export function euqalKeys(k1: AbstractKey | AnnotatedKey,k2: AbstractKey | Annot
 
   return false;
 }
+
+/**
+ * Checks that "obj == {}" in a right manner.
+ * @param obj to test for emptiness
+ * @return true if object _has no keys_. Note that object with keys set to undefined is not considered empty.
+ */
+export function isEmptyObject(obj: any): boolean {
+  return Object.keys(obj).length == 0;
+}
+
+/**
+ * Extended emptiness check that correctly works with regular objects `{}` and Map<K,V> instances as well. The empty
+ * map is not, technically, an empty object, though in some browsers its Object.keys returns empty array, so use
+ * this function instead.
+ * @param obj object to check for emptiness.
+ * @return true if object has no key or is an instance of the empty map
+ */
+export function isEmptyObjectOrMap(obj: any): boolean {
+  if( obj instanceof Map ) return obj.size == 0;
+  return isEmptyObject(obj);
+}
+

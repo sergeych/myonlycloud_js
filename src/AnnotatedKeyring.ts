@@ -6,9 +6,9 @@ import {
   serializeKeyAnnotation
 } from "./AnnotatedKey";
 import { PasswordKeyGenerator } from "./PasswordKeyGenerator";
-import { BossObject, BossPrimitive } from "uparsecjs";
+import { BossObject } from "uparsecjs";
 import { MapSerializer, Serializable, SerializedSet } from "./MapSerializer";
-import { AbstractKey, Boss } from "unicrypto";
+import { isEmptyObjectOrMap } from "./tools";
 
 @Serializable
 export class AnnotatedKeyring {
@@ -224,7 +224,7 @@ export class AnnotatedKeyring {
     const passwordTags = new Map<string, BossObject>();
     for (const [password, tags] of this.passwordTags) {
       // passwordTags.set(password, {$:'Set',data: [...tags.values()]});
-      passwordTags.set(password, await MapSerializer.serialize(tags));
+      passwordTags.set(password, await MapSerializer.serialize(tags) as BossObject);
     }
     return {
       $: "AnnotatedKeyring",
@@ -251,11 +251,13 @@ export class AnnotatedKeyring {
     const result = new AnnotatedKeyring(...keys);
 
     // keyTags now contain a serialized set, e.g. {$:'Set',data: stirng[]}
-    const keyTagsMap = source.keyTags as Map<BossObject, SerializedSet<string>>;
+    if( !isEmptyObjectOrMap(source.keyTags)) {
+      const keyTagsMap = source.keyTags as Map<BossObject, SerializedSet<string>>;
 
-    for (const [k, v] of keyTagsMap) {
-      const annotation = deserializeKeyAnnotation(k);
-      result.addTagsTo(annotation, ...v.data);
+      for (const [k, v] of keyTagsMap) {
+        const annotation = deserializeKeyAnnotation(k);
+        result.addTagsTo(annotation, ...v.data);
+      }
     }
     const passwords = source.passwords as SerializedSet<string>;
     result.addPasswords(...passwords.data);

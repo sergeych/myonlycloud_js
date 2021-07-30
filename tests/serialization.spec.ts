@@ -1,4 +1,5 @@
 import { CaseObject, MapSerializer } from "../src/MapSerializer";
+import { BossObject, BossPrimitive } from "uparsecjs";
 
 describe('map serialization', () => {
 
@@ -37,10 +38,10 @@ describe('map serialization', () => {
     expect(t1.foo).toEqual("bar");
     expect(t1.bar).toEqual(42);
 
-    const st = await MapSerializer.serialize(t1);
+    const st = await MapSerializer.serialize(t1) as any;
     console.log(st);
-    expect(st.$).toEqual("T1");
-    const t2 = await MapSerializer.deserialize<T1>(await MapSerializer.serialize(t1));
+    expect(st?.$).toEqual("T1");
+    const t2 = await MapSerializer.deserialize<T1>(await MapSerializer.serialize(t1) as BossObject);
     console.log(t2);
     expect(t2.foo).toEqual("bar");
     expect(t2.bar).toEqual(42);
