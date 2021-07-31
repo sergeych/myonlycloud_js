@@ -1,6 +1,6 @@
 {
   "name": "myonlycloud",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "myonly.cloud javascript/typescript interface",
   "author": "Sergey Chernov <real.sergeych@gmail.com>",
   "license": "MIT",
@@ -20,6 +20,7 @@
   },
   "bin": {},
   "dependencies": {
+    "dexie": "^3.0.3",
     "isomorphic-fetch": "^3",
     "unicrypto": "^1.5.6",
     "uparsecjs": "^0.2.4"
