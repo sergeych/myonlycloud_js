@@ -58,4 +58,3 @@ export function isEmptyObjectOrMap(obj: any): boolean {
   if( obj instanceof Map ) return obj.size == 0;
   return isEmptyObject(obj);
 }
-

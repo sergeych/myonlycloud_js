@@ -30,11 +30,12 @@ describe('map serialization', () => {
     class T1 extends CaseObject {
       foo!: string;
       bar!: number;
+      date: Date;
     }
 
     MapSerializer.registerCaseObject(T1);
 
-    const t1 = new T1({foo: "bar", bar: 42});
+    const t1 = new T1({foo: "bar", bar: 42, date: new Date()});
     expect(t1.foo).toEqual("bar");
     expect(t1.bar).toEqual(42);
 

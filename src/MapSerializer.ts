@@ -50,12 +50,12 @@ export class MapSerializer {
     const name = cls.prototype.constructor.name;
     if (!name) throw Error("MapSerialization can't derive name from " + cls);
     const h = {
-      deserialize: async (src) => {
+      deserialize: async (src: BossObject) => {
         const props = await deserializeMap(src);
         delete props.$;
         return new cls(props);
       },
-      serialize: async instance => {
+      serialize: async (instance: any) => {
         return { ...await serializeMap(instance), $: overrideName ?? name };
       }
     };
@@ -294,6 +294,16 @@ MapSerializer.register("KeyAddress", {
   }
 });
 
+MapSerializer.register<Date>("Date", {
+  deserialize(map: BossObject): Promise<Date> {
+    const t = map.unixtimeMillis;
+    if( !t || typeof (t) != 'number') throw new Error("serialized date has no proper unixtimeMillis field");
+    return Promise.resolve(new Date(t));
+  }, serialize(instance: Date): Promise<BossObject> {
+    return Promise.resolve({unixtimeMillis: instance.getTime()});
+  }
+
+});
 
 export type SerializedSet<T> = {
   $: 'Set';
