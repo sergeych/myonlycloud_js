@@ -14,7 +14,7 @@
     "link": "yarn build && cd dist && yarn link",
     "build": "tsc",
     "full_build": "tsc && yarn docs",
-    "docs": "typedoc --excludePrivate",
+    "docs": "typedoc --excludePrivate --entryPoints src/index.ts",
     "test": "jest --coverage",
     "pub": "yarn build && yarn publish && bin/pubdocs"
   },
@@ -40,7 +40,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "ts-jest": "^26.5.5",
-    "typedoc": "^0.20.36",
+    "typedoc": "^0.21.4",
     "typescript": "^4.2.4"
   }
 }
