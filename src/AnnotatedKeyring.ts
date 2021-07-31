@@ -250,7 +250,7 @@ export class AnnotatedKeyring {
 
     const result = new AnnotatedKeyring(...keys);
 
-    // keyTags now contain a serialized set, e.g. {$:'Set',data: stirng[]}
+    // keyTags now contain a serialized set, e.g. {$:'Set',data: string[]}
     if( !isEmptyObjectOrMap(source.keyTags)) {
       const keyTagsMap = source.keyTags as Map<BossObject, SerializedSet<string>>;
 

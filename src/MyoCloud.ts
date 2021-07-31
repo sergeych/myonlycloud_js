@@ -53,6 +53,7 @@ function extractElement(element: CloudElement): CloudElement {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export class MyoCloud implements PConnection {
 
   static Exception = class extends Error {
@@ -80,8 +81,8 @@ export class MyoCloud implements PConnection {
   readonly #expiringLoginKey = new ExpiringValue<PrivateKey>();
   private connectedPromise = new CompletablePromise<void>();
 
-  // exact login state: undefined - not known (not yet checked), true - logged in now, false - logged aout at all.
-  // it meanss, when loastLogin exists and loginState is undefined, the login might be restored. When it is false,
+  // exact login state: undefined - not known (not yet checked), true - logged in now, false - logged out at all.
+  // it means, when lastLogin exists and loginState is undefined, the login might be restored. When it is false,
   // though, it means that cloud has disconnected the session an we need to re-login.
   private loginState?: boolean;
 
@@ -93,8 +94,8 @@ export class MyoCloud implements PConnection {
    *
    * __Important note about `testMode` sessions__. Anu login registered from test mode is subject to eventual
    * cleanup by the service, we guarantee only few minutes, and it could be deleted by any other process by login
-   * only, not requiring even the password, see [clearTestLogin] for details. So __do not use `testMode` excpet
-   * for reqgression tests!__
+   * only, not requiring even the password, see [clearTestLogin] for details. So __do not use `testMode` except
+   * for regression tests!__
    *
    * @param store where to store sensitive connection data. It is recommended to keep it in some safe or encrypted
    *              storage.
@@ -124,6 +125,7 @@ export class MyoCloud implements PConnection {
       kap,
       params.testMode,
       params.testMode ? 2048 : 4096);
+    // noinspection JSIgnoredPromiseFromCall
     this.tryRestoreSession();
   }
 
@@ -148,7 +150,7 @@ export class MyoCloud implements PConnection {
    * it safe to call at any moment in future.
    *
    * __important__. If some listener will be added several times, it will be called several times. Be sure to remove
-   * unneded listeners using returned label. Invocation order is not guaranteed.
+   * unneeded listeners using returned label. Invocation order is not guaranteed.
    *
    * @param lr listener to add.
    * @return listener label used to remove it
@@ -228,7 +230,7 @@ export class MyoCloud implements PConnection {
 
     // if we've get there with no exception, we are logged in.
     // now we should restore registry and happily proceed
-    console.log("loggged in, preparing registry");
+    console.log("logged in, preparing registry");
     // TODO: registry needs storage key
     if (!this.#storageKey) throw new Error("storage key is not set, internal error");
     this.#registry = new Registry(this, this.#storageKey);
@@ -254,6 +256,7 @@ export class MyoCloud implements PConnection {
    */
   async nextPrivateKey(): Promise<PrivateKey> {
     const k = this.lastPrivateKey;
+    // noinspection ES6MissingAwait
     MyoCloud.newPrivateKey();
     return k;
   }
@@ -266,7 +269,7 @@ export class MyoCloud implements PConnection {
    * @param password
    * @param loginKey specify new private key to use with a login, or null to let library to generate new one.
    *
-   * @return result, namely 'OK', 'login_in_use' or 'error' if some other error has occured (e.g. network error).
+   * @return result, namely 'OK', 'login_in_use' or 'error' if some other error has occurred (e.g. network error).
    *
    * @throws MyoCloud.IllegalState if it is already logged in (log out first)
    */
@@ -321,14 +324,14 @@ export class MyoCloud implements PConnection {
 
   /**
    * Get and decrypt login key. Could be used by client software to get the key when it is expired,
-   * in which case _login parametere should be omitted_.
+   * in which case _login parameter should be omitted_.
    *
    * Please do not specify login other than used by system or it will cause exception. When implementing
    * login protocol, be sure to drop saved login first.
    *
    * @param password to use to decrypt the login key.
    * @param login for internal use in login procedure. Login to request the key from.
-   * @throws IllegalState if it is not logged in or login is pecified but is wrong. Log out or log in.
+   * @throws IllegalState if it is not logged in or login is specified but is wrong. Log out or log in.
    * @throws InvalidPassword
    */
   private async restoreLoginKey(password: string, login?: string): Promise<void> {
@@ -346,7 +349,6 @@ export class MyoCloud implements PConnection {
 
     let cloudKeys;
     try {
-      // TODO: extracto also storage key?
       cloudKeys = await Credentials.decryptCloudKeys(password, result.encryptedKey as Uint8Array)
     } catch (e) {
       // console.error("decrypt cloud key:", e);
@@ -400,7 +402,7 @@ export class MyoCloud implements PConnection {
     await this.call("deleteElementsById", {ids});
   }
 
-  async* inboxes(): AsyncGenerator<Inbox, void, unknown> {
+  async* inboxes(): AsyncGenerator<Inbox, void> {
     const r = await this.call("Inboxes.all") as unknown as { inboxes: InboxDefinitionRecord[] };
     for (const x of r.inboxes) {
       yield await new Inbox(this, x).ready

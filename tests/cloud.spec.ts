@@ -1,10 +1,8 @@
-import { MyoCloud } from "../src/MyoCloud";
+import { AnnotatedKey, CloudElement, MyoCloud, RegistryData } from "../src";
 import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
 import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
-import { AnnotatedKey } from "../src/AnnotatedKey";
 import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
-import { CloudElement, RegistryData } from "../src";
 import { MapSerializer } from "../src/MapSerializer";
 
 function getServiceAddress(useLocal: boolean=false): string {
@@ -89,7 +87,7 @@ describe('cloudservice', () => {
   });
 
   it("registers", async() => {
-    jest.setTimeout(95000)
+    jest.setTimeout(35000)
     const s: MyoCloud = createSession(false)
     Config.testMode = true
     await s.connected

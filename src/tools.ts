@@ -18,7 +18,7 @@ export function encode64Compact(data: Uint8Array): string {
  *
  * @return true if keys are equal.
  */
-export function euqalKeys(k1: AbstractKey | AnnotatedKey,k2: AbstractKey | AnnotatedKey) {
+export function equalKeys(k1: AbstractKey | AnnotatedKey, k2: AbstractKey | AnnotatedKey) {
 
   if( k1 instanceof AnnotatedKey && k2 instanceof AnnotatedKey)
     return k1.equalsTo(k2);

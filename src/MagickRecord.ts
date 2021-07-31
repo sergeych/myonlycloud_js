@@ -22,7 +22,7 @@ export class MagickRecord {
    * Unpack magick framed record optionally checking the label.
    * @param packed
    * @param labels if at least one label presents, will not unpack the rest of the record unless the loaded label is
-   *        listed among lavels.
+   *        listed among labels.
    * @throws MagickRecord.Exception if the label is not present in an non-empty labels.
    */
   static async unpack<T>(packed: Uint8Array, ...labels: string[]): Promise<MagicRecordData<T>> {

@@ -1,7 +1,5 @@
 import { Boss, encode64, PrivateKey, SHA } from "unicrypto";
-import { UNS } from "uparsecjs/dist/UNS";
-import { UniversalPasswordKey, utf8ToBytes } from "uparsecjs";
-import { Config } from "./Config";
+import { utf8ToBytes } from "uparsecjs";
 import { AnnotatedKey } from "./AnnotatedKey";
 import { PasswordKeyGenerator } from "./PasswordKeyGenerator";
 import { SharedBox } from "./SharedBox";
@@ -36,7 +34,7 @@ interface CloudAccessKeys {
 }
 
 /**
- * Calculate parts of myonly.cloud login/registration data, e.g. loginHash, loginKey and storageKey.
+ * Calculate parts of MyOnly.cloud login/registration data, e.g. loginHash, loginKey and storageKey.
  */
 export class Credentials {
   static deriveLoginHash(login: string): Promise<string> {

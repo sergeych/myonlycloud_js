@@ -2,7 +2,7 @@ import { MyoCloud } from "./MyoCloud";
 import { CloudObject } from "./CloudObject";
 import { CloudElement } from "./CloudData";
 
-const privateDocumentTagPrefx = "Inbox.Private_";
+const privateDocumentTagPrefix = "Inbox.Private_";
 
 export type InboxDefinitionRecord = { id: string, element: CloudElement };
 export type InboxInternalData = {
@@ -23,7 +23,7 @@ export class Inbox {
 
   private async initialize(): Promise<Inbox> {
     const d = await this.service.objectByUniqueTag<InboxInternalData>(
-      await this.service.scramble(privateDocumentTagPrefx + this.idr.id)
+      await this.service.scramble(privateDocumentTagPrefix + this.idr.id)
     );
     if (!d) throw new MyoCloud.Exception("inbox: failed to load box definition object");
     this.definition = d;

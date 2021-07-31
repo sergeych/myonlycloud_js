@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { AbstractKey, encode64, PrivateKey, PublicKey, randomBytes, SHA, SHAStringType, SymmetricKey } from "unicrypto";
+import { encode64, PrivateKey, PublicKey, randomBytes, SHA, SHAStringType, SymmetricKey } from "unicrypto";
 import {
-  BossObject, equalArrays,
+  BossObject,
+  equalArrays,
   UniversalKey,
   UniversalPasswordKey,
   UniversalPrivateKey,
   UniversalSymmetricKey,
   utf8ToBytes
 } from "uparsecjs";
-import instantiate = WebAssembly.instantiate;
 import { PasswordKeyGenerator } from "./PasswordKeyGenerator";
 import { encode64Compact } from "./tools";
 import { MapSerializable, MapSerializer, Serializable } from "./MapSerializer";
@@ -24,7 +24,7 @@ export interface RSAKeyAnnotation {
 }
 
 /**
- * Supportad hashes used in annotation key didgests, mainly, in password
+ * Supported hashes used in annotation key digests, mainly, in password
  * generators PBKDF2 and like
  */
 export type AnnotatedKeyDigestType = "SHA256" | "SHA512" | "SHA3_256" | "SHA3_384";
@@ -43,7 +43,7 @@ export interface PasswordKeyAnnotation {
 export type KeyAnnotation = PasswordKeyAnnotation | RSAKeyAnnotation | SymmetricKeyAnnotation;
 
 /**
- * Cobvert [KeyAnnotation] fo a serialized form suitable for MyOnlycloud binary serialization.
+ * Convert [KeyAnnotation] fo a serialized form suitable for MyOnlyCloud binary serialization.
  * @param annotation to serialize
  */
 export function serializeKeyAnnotation(annotation: KeyAnnotation): BossObject {
@@ -56,8 +56,7 @@ export function serializeKeyAnnotation(annotation: KeyAnnotation): BossObject {
 }
 
 /**
- * Deserializes MyOnlyCould-serlialized KeyAnnotation
- * @param source
+ * Deserializes MyOnlyCould-serialized KeyAnnotation
  */
 export function deserializeKeyAnnotation(_source: BossObject): KeyAnnotation {
   const source: any = _source;
@@ -170,8 +169,7 @@ export class AnnotatedKey implements MapSerializable {
     ) {
       return equalArrays(annotation.id, this.annotation.id)
     }
-    if (this.annotationLabel == annotationLabel(annotation)) return true;
-    return false
+    return this.annotationLabel == annotationLabel(annotation);
   }
 
   equalsTo(otherKey: AnnotatedKey | PrivateKey | PublicKey): boolean {
@@ -182,10 +180,9 @@ export class AnnotatedKey implements MapSerializable {
       case "RSAKeyAnnotation": {
         const k1 = this.key;
         const k2 = other.key;
-        if (k1 instanceof PublicKey && k2 instanceof PublicKey ||
-          k1 instanceof PrivateKey && k2 instanceof PrivateKey)
-          return true;
-        return false;
+        return k1 instanceof PublicKey && k2 instanceof PublicKey ||
+          k1 instanceof PrivateKey && k2 instanceof PrivateKey;
+
       }
       case "PasswordKeyAnnotation":
       case "SymmetricKeyAnnotation": {
@@ -276,7 +273,7 @@ export class AnnotatedKey implements MapSerializable {
  * Convert `unicrypto` hash algorithm name to the the annotated key's label. See [[SHA]] for example.
  * @param hashAlgorithm as recognized by unicrypto
  * @return converted label
- * @throws AnnotatedKey.Exception if the nane of the hash is not supported bu annotated keys infrastructure
+ * @throws AnnotatedKey.Exception if the name of the hash is not supported bu annotated keys infrastructure
  */
 export function toAnnotatedKeyHashType(hashAlgorithm: SHAStringType): AnnotatedKeyDigestType {
   switch (hashAlgorithm) {

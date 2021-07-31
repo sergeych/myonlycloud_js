@@ -1,10 +1,12 @@
 import {
   AnnotatedKey,
   AnnotatedKeyDigestType,
-  fromAnnotatedKeyHashType, hashDigest,
-  hashDigest64, PasswordKeyAnnotation
+  fromAnnotatedKeyHashType,
+  hashDigest,
+  hashDigest64,
+  PasswordKeyAnnotation
 } from "./AnnotatedKey";
-import { equalArrays, utf8ToBytes } from "uparsecjs";
+import { equalArrays } from "uparsecjs";
 import { pbkdf2, SymmetricKey } from "unicrypto";
 
 /**
@@ -30,7 +32,7 @@ const recycler = new Map<string,PasswordKeyGenerator>();
 
 /**
  * Generates keys for same passwords and cache generated arrays. One password may require
- * generation of different keys and maybe with different generation parameters, so we cach it
+ * generation of different keys and maybe with different generation parameters, so we catch it
  * inside.
  *
  * Use [[generateKeys]] to get the keys. Do not instantiate this class manually.
@@ -59,7 +61,7 @@ export class PasswordKeyGenerator {
 
   /**
    * Generate one or more keys from this password. If such a key is already generated or is being generated,
-   * it will be automatically reused. Creates AnnotatedKeys that could be later restored from the passowrd using
+   * it will be automatically reused. Creates AnnotatedKeys that could be later restored from the password using
    * parameters saved inside their instances (see [[PasswordKeyAnnotation]]).
    *
    * Not that the cryptographically independent ID for annotation is also derived from the password and could be
@@ -68,7 +70,7 @@ export class PasswordKeyGenerator {
    * @param count number of keys to generated
    * @param salt PBKDF2 salt
    * @param rounds PBKDF2 rounds
-   * @param idLength size of id that is also dervived from the password.
+   * @param idLength size of id that is also derived from the password.
    * @param digest hash algorithm used in PBKDF2
    */
   public async generateKeys(
@@ -162,7 +164,7 @@ export class PasswordKeyGenerator {
   }
 
   /**
-   * Forget everything about generated keys. New keys will be re-derived on firts request.
+   * Forget everything about generated keys. New keys will be re-derived on first request.
    * It is safe to call clear immediately after [[generateKeys]].
    */
   static clear() {
@@ -172,14 +174,14 @@ export class PasswordKeyGenerator {
   /**
    * Try to restore the key for a given password and annotation, which contains all necessary derivation
    * parameters. Note that derivation contains also id, so we can check that derived key is what is expected,
-   * and retunr undefined if the password does not match.
+   * and return undefined if the password does not match.
    * @param password to derive from
    * @param annotation
    * @return promise with derived key if the password is ok otherwise undefined.
    */
   static restoreKey(password: string,annotation: PasswordKeyAnnotation): Promise<AnnotatedKey|undefined> {
     if( annotation.type != "PasswordKeyAnnotation")
-      throw new AnnotatedKey.Exception(`annotatin of type ${annotation.type} can;t be used to regeneratoe password key`);
+      throw new AnnotatedKey.Exception(`annotation of type ${annotation.type} can't be used to regenerate password key`);
     return this.recyclableGenerator(password).restoreKey(annotation);
   }
 }
