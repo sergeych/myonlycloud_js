@@ -31,6 +31,7 @@ describe('map serialization', () => {
       foo!: string;
       bar!: number;
       date: Date;
+      optString?: string;
     }
 
     MapSerializer.registerCaseObject(T1);
@@ -42,10 +43,33 @@ describe('map serialization', () => {
     const st = await MapSerializer.serialize(t1) as any;
     console.log(st);
     expect(st?.$).toEqual("T1");
-    const t2 = await MapSerializer.deserialize<T1>(await MapSerializer.serialize(t1) as BossObject);
+    const t2 = await MapSerializer.fromBoss<T1>(await MapSerializer.toBoss(t1));
     console.log(t2);
     expect(t2.foo).toEqual("bar");
     expect(t2.bar).toEqual(42);
+    expect(t2.optString).toBeUndefined();
   });
+
+  it("serializes undefineds", async() => {
+    class T2 {
+
+      cloudId?: number;
+      title?: string;
+      value: number;
+
+      constructor(props: Partial<T2>) {
+        Object.assign(this,props);
+      }
+    }
+
+    MapSerializer.registerCaseObject(T2);
+    const t1: T2 = new T2({value: 42, title: undefined});
+    const t2 = await MapSerializer.anyFromBoss<T2>(await MapSerializer.toBoss(t1));
+    // console.log(t1);
+    // console.log(t2);
+    expect(t2.value).toBe(42);
+    expect(t2.cloudId).toBeUndefined();
+    expect(t2.title).toBeUndefined();
+  })
 
 })

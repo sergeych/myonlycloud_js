@@ -81,8 +81,9 @@ export class MapSerializer {
   static async serializeAny(source: any): Promise<BossPrimitive> {
     switch (typeof source) {
       case "undefined":
-        return null;
+        throw new Error("unidefined should not be serialzied");
       case "object":
+        if( source === null ) return null;
         if (source instanceof Array) {
           const result: BossPrimitive[] = [];
           for (const item of source) result.push(await this.deserializeAny(item));
@@ -233,7 +234,9 @@ async function serializeMap<T extends Record<string, any>>(source: T): Promise<B
   const result: BossObject = {};
   for (const key in source) {
     if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
-    result[key] = await MapSerializer.serializeAny(source[key]);
+    const value = source[key];
+    if( value !== undefined)
+      result[key] = await MapSerializer.serializeAny(value);
   }
   return result;
 }

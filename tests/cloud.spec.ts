@@ -86,25 +86,6 @@ describe('cloudservice', () => {
     expect(rd.source.keyring.findKey(k.annotation)).not.toBeUndefined()
   });
 
-  it("registers", async() => {
-    jest.setTimeout(35000)
-    const s: MyoCloud = createSession(false)
-    Config.testMode = true
-    await s.connected
-    expect(s.isLoggedIn).toBeFalsy()
-    const k = await AnnotatedKey.createPrivate(2048);
-    expect(
-      await s.register("test21", "bar", k.key as PrivateKey)
-    ).toBe("login_in_use");
-
-    await s.clearTestLogin("..foobar");
-    const result = await s.register("..foobar", "123123", k.key as PrivateKey);
-    expect(result).toBe("OK");
-    console.log("----------------------------------------------------- registration -------")
-    await s.login("..foobar", "123123");
-    expect(await s.checkConnection()).toBe("loggedIn");
-  });
-
   it("handles properly invalid session connections", async() => {
     const rc = new RootConnection("http://localhost:9876/api/p1");
     try {
@@ -160,6 +141,25 @@ describe('cloudservice', () => {
 
     s.deleteElements(element1!);
 
+  });
+
+  it("registers", async() => {
+    jest.setTimeout(35000)
+    const s: MyoCloud = createSession(false)
+    Config.testMode = true
+    await s.connected
+    expect(s.isLoggedIn).toBeFalsy()
+    const k = await AnnotatedKey.createPrivate(2048);
+    expect(
+      await s.register("test21", "bar", k.key as PrivateKey)
+    ).toBe("login_in_use");
+
+    await s.clearTestLogin("..foobar");
+    const result = await s.register("..foobar", "123123", k.key as PrivateKey);
+    expect(result).toBe("OK");
+    console.log("----------------------------------------------------- registration -------")
+    await s.login("..foobar", "123123");
+    expect(await s.checkConnection()).toBe("loggedIn");
   });
 
 
