@@ -36,9 +36,11 @@ describe('map serialization', () => {
 
     MapSerializer.registerCaseObject(T1);
 
-    const t1 = new T1({foo: "bar", bar: 42, date: new Date()});
+    const d = new Date();
+    const t1 = new T1({foo: "bar", bar: 42, date: d});
     expect(t1.foo).toEqual("bar");
     expect(t1.bar).toEqual(42);
+
 
     const st = await MapSerializer.serialize(t1) as any;
     console.log(st);
@@ -48,6 +50,7 @@ describe('map serialization', () => {
     expect(t2.foo).toEqual("bar");
     expect(t2.bar).toEqual(42);
     expect(t2.optString).toBeUndefined();
+    expect(t2.date.getTime()).toBeCloseTo(d.getTime());
   });
 
   it("serializes undefineds", async() => {

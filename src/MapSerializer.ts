@@ -299,13 +299,12 @@ MapSerializer.register("KeyAddress", {
 
 MapSerializer.register<Date>("Date", {
   deserialize(map: BossObject): Promise<Date> {
-    const t = map.unixtimeMillis;
+    const t = map.unixtime;
     if( !t || typeof (t) != 'number') throw new Error("serialized date has no proper unixtimeMillis field");
-    return Promise.resolve(new Date(t));
+    return Promise.resolve(new Date(t*1000));
   }, serialize(instance: Date): Promise<BossObject> {
-    return Promise.resolve({unixtimeMillis: instance.getTime()});
+    return Promise.resolve({unixtime: instance.getTime()/1000});
   }
-
 });
 
 export type SerializedSet<T> = {
