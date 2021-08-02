@@ -1,5 +1,4 @@
-import { CaseObject, MapSerializer } from "../src/MapSerializer";
-import { BossObject, BossPrimitive } from "uparsecjs";
+import { CaseObject, MapSerializer } from "../src";
 
 describe('map serialization', () => {
 
@@ -9,7 +8,6 @@ describe('map serialization', () => {
 
     const k1 = { foo: "bar", value: 41 };
     const k2 = { foo: "bar", value: 43 };
-    const k11 = { foo: "bar", value: 41 };
 
     m1.set(k1, "k1");
     m1.set(k2, "k2");

@@ -1,8 +1,5 @@
 import { decode64, encode64, PrivateKey } from "unicrypto";
-import { SharedBox } from "../src/SharedBox";
-import { fromBoss } from "../src/MapSerializer";
-import { AnnotatedKey } from "../src/AnnotatedKey";
-import { Credentials } from "../src/Credentials";
+import { AnnotatedKey, Credentials, fromBoss, SharedBox } from "../src";
 
 describe('cloudservice', () => {
 

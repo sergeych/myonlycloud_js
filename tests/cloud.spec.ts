@@ -1,9 +1,7 @@
-import { AnnotatedKey, CloudElement, MyoCloud, RegistryData } from "../src";
+import { AnnotatedKey, CloudElement, Config, MapSerializer, MyoCloud, RegistryData } from "../src";
 import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
-import { Config } from "../src/Config";
 import { PrivateKey } from "unicrypto";
 import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
-import { MapSerializer } from "../src/MapSerializer";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
