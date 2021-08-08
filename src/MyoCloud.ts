@@ -323,6 +323,15 @@ export class MyoCloud implements PConnection {
   }
 
   /**
+   * Current main storage key that _must be used dor encrypting new data_. As main storage key is subject to
+   * change with time, use [[mainRing]] for decryption, it will create all available keys, also old storage keys.
+   */
+  get storageKey(): AnnotatedKey {
+    if (!this.#registry) throw new MyoCloud.NotLoggedIn();
+    return this.#registry.storageKey;
+  }
+
+  /**
    * Get and decrypt login key. Could be used by client software to get the key when it is expired,
    * in which case _login parameter should be omitted_.
    *
@@ -366,6 +375,16 @@ export class MyoCloud implements PConnection {
     return result.element ? new MyoElement(this, result.element as BossObject) : undefined;
   }
 
+  async setByUniqueTag(element: CloudElement): Promise<MyoElement> {
+    if( !element.uniqueTag ) throw new MyoCloud.Exception("setByUinqueTag: uniqueTag not set");
+    const result = await this.callTo<{ element?: BossObject }>(
+      "setByUniqueTag",
+      element as unknown as BossObject
+    );
+    if( result.element ) return new MyoElement(this, result.element);
+    throw new RemoteException("unknown", "no element was returned");
+  }
+
   async elementByUniqueTagOrTrow(uniqueTag: string): Promise<MyoElement> {
     const element = await this.elementByUniqueTag(uniqueTag);
     if (!element)
@@ -388,6 +407,7 @@ export class MyoCloud implements PConnection {
     }
     return undefined;
   }
+
 
   async updateElement(element: CloudElement): Promise<void> {
     await this.call("updateById", extractElement(element) as BossObject);

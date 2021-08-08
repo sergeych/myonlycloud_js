@@ -1,7 +1,7 @@
 import { AnnotatedKey, CloudElement, Config, MapSerializer, MyoCloud, RegistryData } from "../src";
 import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
 import { PrivateKey } from "unicrypto";
-import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
+import { Passwords, RootConnection, Session, utf8ToBytes } from "uparsecjs";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
@@ -38,7 +38,7 @@ describe('cloudservice', () => {
   })
 
   it("logs in", async () => {
-    jest.setTimeout(15000);
+    jest.setTimeout(20000);
     const s = createSession(false);
     Config.testMode = false
     await s.login("test_21", "qwert12345.");
@@ -141,6 +141,41 @@ describe('cloudservice', () => {
 
   });
 
+  it("sets by unique tag", async () => {
+    const s = createSession(false);
+    Config.testMode = false
+    await s.login("test_21", "qwert12345.");
+    const testData = utf8ToBytes("Welcome, cloud77");
+
+    const e1: CloudElement = {
+      uniqueTag: "creationTestTag",
+      tag1: "tag-1",
+      tag2: "tag-2",
+      tag3: "tag-3",
+      head: testData
+    };
+
+    await s.deleteByUniqueTag(e1.uniqueTag!);
+    let e2 = await s.setByUniqueTag(e1);
+    expect(e2.uniqueTag).toEqual(e1.uniqueTag);
+    expect(e2.tag1).toEqual(e1.tag1);
+    expect(e2.tag2).toEqual(e1.tag2);
+    expect(e2.tag3).toEqual(e1.tag3);
+    expect(e2.head).toEqual(e1.head);
+
+    e1.tag3 = undefined;
+    e1.tag1 = "supper tag";
+    e2 = await s.setByUniqueTag(e1);
+    expect(e2.uniqueTag).toEqual(e1.uniqueTag);
+    expect(e2.tag1).toEqual(e1.tag1);
+    expect(e2.tag2).toEqual(e1.tag2);
+    expect(e2.tag3).toEqual(e1.tag3);
+    expect(e2.head).toEqual(e1.head);
+
+  });
+
+
+
   it("registers", async() => {
     jest.setTimeout(35000)
     const s: MyoCloud = createSession(false)
@@ -162,7 +197,11 @@ describe('cloudservice', () => {
 
 
 
-  // it("ready for obejct loading", async() => {
+  it("run tools", async() => {
+    const part1 = Passwords.randomId(49);
+    const part2 = Passwords.randomId(37);
+    const part3 = Passwords.randomId(117);
+    console.log(part1,part2,part3);
     // const aa : Record<string,number> = {
     //   kk: 1,
     //   ll: 3
@@ -170,6 +209,6 @@ describe('cloudservice', () => {
     // for( const x in ownKeys(aa)) {
     //   console.log(">> "+x+" -> "+aa[x]);
     // }
-  // })
+  })
 
 })

@@ -14,6 +14,7 @@ export type InboxInternalData = {
 export class Inbox {
 
   readonly ready: Promise<Inbox>;
+  // noinspection JSUnusedLocalSymbols
   private utag!: string;
   private definition!: CloudObject<InboxInternalData>;
 

@@ -25,6 +25,11 @@ export class MyoElement implements CloudElement {
 
   updateFrom(elementData: BossObject): void {
     Object.assign(this, elementData);
+    // normalize undefineds from nulls:
+    if( this.uniqueTag === null ) this.uniqueTag = undefined;
+    if( this.tag1 === null ) this.tag1 = undefined;
+    if( this.tag2 === null ) this.tag2 = undefined;
+    if( this.tag3 === null ) this.tag3 = undefined;
   }
 
   toString() {

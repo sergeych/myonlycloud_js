@@ -29,7 +29,7 @@ export class RegistryData extends CaseObject {
       source: {
         tagsSalt: randomBytes(32),
         keyring: new AnnotatedKeyring().addKeys(passwordStorageKey),
-        storageKey: passwordStorageKey
+        storageKey: AnnotatedKey.createRandomSymmetric()
       }
     });
   }
@@ -97,6 +97,10 @@ export class Registry {
     if (!this._mainKeyring)
       this._mainKeyring = this.data.source.keyring.clone().addKeys(this.data.source.storageKey);
     return this._mainKeyring;
+  }
+
+  get storageKey(): AnnotatedKey {
+    return this.data.source.storageKey;
   }
 
   async scramble(tag: string): Promise<string> {
