@@ -9,6 +9,8 @@ function getServiceAddress(useLocal: boolean=false): string {
 
 describe('cloudservice', () => {
 
+  jest.setTimeout(15_000)
+
   function createSession(useLocal=false) {
     const serviceAddress = getServiceAddress(useLocal);
     return new MyoCloud(new MemorySessionStorage(), {
@@ -41,6 +43,7 @@ describe('cloudservice', () => {
     jest.setTimeout(20000);
     const s = createSession(false);
     Config.testMode = false
+    // await s.login("notest_1", "12345qwert!");
     await s.login("test_21", "qwert12345.");
     try {
       for await (const ib of s.inboxes()) {
@@ -49,6 +52,10 @@ describe('cloudservice', () => {
       //no such method
       console.log(await s.call("check"));
       //console.log(await s.call("sessionGetInfo"));
+      const x = await s.scramble("foobar");
+      console.log("scrambled:"+x);
+      expect(x).not.toEqual("foobar");
+
       console.log("done")
     }
     catch(e) {

@@ -46,8 +46,8 @@ export class Registry {
   private data!: RegistryData;
   #passwordStorageKey: AnnotatedKey;
 
-  constructor(private cloud: MyoCloud, storageKey: AnnotatedKey) {
-    this.#passwordStorageKey = storageKey;
+  constructor(private cloud: MyoCloud, passwordStorageKey: AnnotatedKey) {
+    this.#passwordStorageKey = passwordStorageKey;
     this.initialize();
   }
 

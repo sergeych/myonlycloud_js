@@ -57,18 +57,42 @@ function extractElement(element: CloudElement): CloudElement {
 export class MyoCloud implements PConnection {
 
   static Exception = class extends Error {
+    constructor(text: string = "MyOnlyCloud service error") {
+      super(text);
+    }
   };
   static NotFound = class extends MyoCloud.Exception {
+    constructor(text: string = "object not found") {
+      super(text);
+    }
   };
   static IllegalState = class extends MyoCloud.Exception {
+    constructor(text: string = "illegal state") {
+      super(text);
+    }
   };
   static NotLoggedIn = class extends MyoCloud.IllegalState {
+    constructor() {
+      super("not logged in");
+    }
+  };
+
+  static RegistryNotLoaded = class extends MyoCloud.IllegalState {
+    constructor() {
+      super("registry not loaded");
+    }
   };
 
   static InvalidPassword = class extends MyoCloud.Exception {
+    constructor(text: string = "password is invalid") {
+      super(text);
+    }
   };
 
   static LoginNotAvailable = class extends MyoCloud.Exception {
+    constructor(text: string = "login is not available") {
+      super(text);
+    }
   };
 
 
@@ -87,7 +111,7 @@ export class MyoCloud implements PConnection {
   private loginState?: boolean;
 
   #registry?: Registry;
-  #storageKey?: AnnotatedKey;
+  #passwordStorageKey?: AnnotatedKey;
 
   /**
    * Create connection to the myonly.cloud service.
@@ -231,16 +255,23 @@ export class MyoCloud implements PConnection {
     // if we've get there with no exception, we are logged in.
     // now we should restore registry and happily proceed
     console.log("logged in, preparing registry");
-    // TODO: registry needs storage key
-    if (!this.#storageKey) throw new Error("storage key is not set, internal error");
-    this.#registry = new Registry(this, this.#storageKey);
-    await this.#registry.ready;
-    console.log("registry is ready");
+    await this.loadRegistry();
+  }
+
+  async loadRegistry(): Promise<void> {
+    if( !this.#registry) {
+      if (!this.#passwordStorageKey) throw new Error("password storage key is not set, internal error");
+      this.#registry = new Registry(this, this.#passwordStorageKey);
+      await this.#registry.ready;
+      console.log("registry is ready");
+    }
   }
 
   async logout(): Promise<void> {
     if( this.isLoggedIn ) {
       await this.call("signOut");
+      this.#registry = undefined;
+      this.#passwordStorageKey = undefined;
     }
   }
 
@@ -318,7 +349,7 @@ export class MyoCloud implements PConnection {
   }
 
   get mainRing(): AnnotatedKeyring {
-    if (!this.#registry) throw new MyoCloud.NotLoggedIn();
+    if (!this.#registry) throw new MyoCloud.RegistryNotLoaded();
     return this.#registry.mainKeyring;
   }
 
@@ -327,7 +358,7 @@ export class MyoCloud implements PConnection {
    * change with time, use [[mainRing]] for decryption, it will create all available keys, also old storage keys.
    */
   get storageKey(): AnnotatedKey {
-    if (!this.#registry) throw new MyoCloud.NotLoggedIn();
+    if (!this.#registry) throw new MyoCloud.RegistryNotLoaded();
     return this.#registry.storageKey;
   }
 
@@ -367,7 +398,7 @@ export class MyoCloud implements PConnection {
     // console.log("login key decrypted: ",cloudKeys.loginKey);
     this.lastLogin.value = useLogin;
     this.#expiringLoginKey.reset(cloudKeys.loginKey, 5 * 60 * 60);
-    this.#storageKey = cloudKeys.storageKey;
+    this.#passwordStorageKey = cloudKeys.storageKey;
   }
 
   async elementByUniqueTag(uniqueTag: string): Promise<MyoElement | undefined> {
