@@ -78,7 +78,7 @@ export class CloudObject<T> {
     }
     if( !this._data) {
       if (!this._sharedBox) throw new CloudObjectFormatError(`no data found in ${this._element}`);
-      await this._sharedBox.unlockWithRing(service.mainRing);
+      await this._sharedBox.unlockWithRing(await service.mainRing);
       this._data = await MapSerializer.anyFromBoss(await this._sharedBox.payloadPromise);
     }
     // TODO: store in local storage!

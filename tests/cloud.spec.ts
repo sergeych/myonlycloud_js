@@ -18,6 +18,17 @@ describe('cloudservice', () => {
     });
   }
 
+  function createSessionAndStorage(useLocal=false) {
+    const serviceAddress = getServiceAddress(useLocal);
+    let storage = new MemorySessionStorage();
+    return {
+      session: new MyoCloud(storage, {
+        serviceAddress, testMode: true
+      }),
+      storage
+    }
+  }
+
   it("login with no session", async () => {
     jest.setTimeout(15_000)
     const cloud = new MyoCloud(new MemorySessionStorage(), {
@@ -62,7 +73,22 @@ describe('cloudservice', () => {
       console.log("strange failure", e);
       throw e;
     }
-  })
+  });
+
+  it("restores logged in session from storage", async() => {
+    jest.setTimeout(20000);
+    const {storage, session} = createSessionAndStorage(false);
+    Config.testMode = true;
+    // await s.login("notest_1", "12345qwert!");
+    await session.login("test_21", "qwert12345.");
+    const x1 = await session.scramble("foobar")
+    const ss = new MyoCloud(storage, {
+      serviceAddress: getServiceAddress(false), testMode: true
+    });
+    expect(await ss.checkConnection()).toBe("loggedIn");
+    const x2 = await ss.scramble("foobar");
+    expect(x2).toBe(x1);
+  });
 
   /*
    * Explanation. Older account use different encryption scheme that is not yet implemented in this library
@@ -150,7 +176,7 @@ describe('cloudservice', () => {
 
   it("sets by unique tag", async () => {
     const s = createSession(false);
-    Config.testMode = false
+    Config.testMode = true;
     await s.login("test_21", "qwert12345.");
     const testData = utf8ToBytes("Welcome, cloud77");
 
@@ -216,6 +242,6 @@ describe('cloudservice', () => {
     // for( const x in ownKeys(aa)) {
     //   console.log(">> "+x+" -> "+aa[x]);
     // }
-  })
+  });
 
-})
+});

@@ -8,7 +8,7 @@ import {
   RootConnection,
   Session
 } from "uparsecjs";
-import { KeyAddress, PrivateKey, SignedRecord } from "unicrypto";
+import { decode64, encode64, KeyAddress, PrivateKey, SignedRecord } from "unicrypto";
 import { Credentials } from "./Credentials";
 import { ExpiringValue } from "./ExpiringValue";
 import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
@@ -20,6 +20,7 @@ import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { Inbox, InboxDefinitionRecord } from "./Inbox";
 import { Config } from "./Config";
 import { Emitter, EmitterEventListener, EmitterHandle } from "uparsecjs/dist/Emitter";
+import { MapSerializer } from "./MapSerializer";
 
 
 const LOCALSERVICE = "http://localhost:8094"
@@ -104,13 +105,14 @@ export class MyoCloud implements PConnection {
   private readonly lastLogin: CachedStoredValue;
   readonly #expiringLoginKey = new ExpiringValue<PrivateKey>();
   private connectedPromise = new CompletablePromise<void>();
+  #savedPasswordStorageKey: CachedStoredValue;
 
   // exact login state: undefined - not known (not yet checked), true - logged in now, false - logged out at all.
   // it means, when lastLogin exists and loginState is undefined, the login might be restored. When it is false,
   // though, it means that cloud has disconnected the session an we need to re-login.
   private loginState?: boolean;
 
-  #registry?: Registry;
+  #_registry?: Registry;
   #passwordStorageKey?: AnnotatedKey;
 
   /**
@@ -134,6 +136,7 @@ export class MyoCloud implements PConnection {
         root = (window.location.hostname == 'localhost') ? LOCALSERVICE : CLOUDSERVICE;
       } else root = CLOUDSERVICE;
     }
+    this.#savedPasswordStorageKey = new CachedStoredValue(store, "passwordStorageKey");
     this.lastLogin = new CachedStoredValue(store, "lastLogin");
     this.rootConnection = new RootConnection(root);
     const kap = (_refresh: boolean) => {
@@ -255,22 +258,33 @@ export class MyoCloud implements PConnection {
     // if we've get there with no exception, we are logged in.
     // now we should restore registry and happily proceed
     console.log("logged in, preparing registry");
-    await this.loadRegistry();
+    this.#savedPasswordStorageKey.value = encode64(
+      await MapSerializer.toBoss(this.#passwordStorageKey)
+    );
+    await this.registry;
   }
 
-  async loadRegistry(): Promise<void> {
-    if( !this.#registry) {
-      if (!this.#passwordStorageKey) throw new Error("password storage key is not set, internal error");
-      this.#registry = new Registry(this, this.#passwordStorageKey);
-      await this.#registry.ready;
-      console.log("registry is ready");
-    }
+  private get registry(): Promise<Registry> {
+    return (async() => {
+      if (!this.#_registry) {
+        if (!this.#passwordStorageKey) {
+          const p = this.#savedPasswordStorageKey.value;
+          if (!p) throw new MyoCloud.IllegalState("session storage has no stored password key, please re-login")
+          this.#passwordStorageKey = await MapSerializer.fromBoss(decode64(p));
+        }
+        if (!this.#passwordStorageKey) throw new Error("password storage key is not set, internal error");
+        this.#_registry = new Registry(this, this.#passwordStorageKey);
+        await this.#_registry.ready;
+        console.log("registry is ready");
+      }
+      return this.#_registry
+    })();
   }
 
   async logout(): Promise<void> {
     if( this.isLoggedIn ) {
       await this.call("signOut");
-      this.#registry = undefined;
+      this.#_registry = undefined;
       this.#passwordStorageKey = undefined;
     }
   }
@@ -348,18 +362,17 @@ export class MyoCloud implements PConnection {
     await this.call("clearTestLogin", { loginHash: await Credentials.deriveLoginHash(login)});
   }
 
-  get mainRing(): AnnotatedKeyring {
-    if (!this.#registry) throw new MyoCloud.RegistryNotLoaded();
-    return this.#registry.mainKeyring;
+  get mainRing(): Promise<AnnotatedKeyring> {
+    if( this.#_registry ) return Promise.resolve(this.#_registry.mainKeyring);
+    return this.registry.then(r=>r.mainKeyring);
   }
 
   /**
    * Current main storage key that _must be used dor encrypting new data_. As main storage key is subject to
    * change with time, use [[mainRing]] for decryption, it will create all available keys, also old storage keys.
    */
-  get storageKey(): AnnotatedKey {
-    if (!this.#registry) throw new MyoCloud.RegistryNotLoaded();
-    return this.#registry.storageKey;
+  get storageKey(): Promise<AnnotatedKey> {
+    return this.registry.then(r => r.storageKey);
   }
 
   /**
@@ -465,8 +478,7 @@ export class MyoCloud implements PConnection {
   }
 
   async scramble(name: string): Promise<string> {
-    if (!this.#registry) throw new MyoCloud.NotLoggedIn();
-    return this.#registry.scramble(name);
+    return (await this.registry).scramble(name);
   }
 
   async objectByUniqueTag<T>(utag: string, creator?: (element: CloudElement) => Promise<CloudObject<T>>)
