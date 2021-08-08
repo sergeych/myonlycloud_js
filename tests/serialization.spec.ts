@@ -1,4 +1,7 @@
 import { CaseObject, MapSerializer } from "../src";
+import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
+import { randomBytes } from "unicrypto";
+import { SessionValue } from "../src/SessionValue";
 
 describe('map serialization', () => {
 
@@ -71,6 +74,16 @@ describe('map serialization', () => {
     expect(t2.value).toBe(42);
     expect(t2.cloudId).toBeUndefined();
     expect(t2.title).toBeUndefined();
-  })
+  });
+
+  it("supports session value",() => {
+    const ms = new MemorySessionStorage();
+    const data = randomBytes(32);
+    const v1 = new SessionValue(ms, "v1");
+    v1.value = data;
+    expect(v1.value).toEqual(data);
+    const v2 = new SessionValue(ms, "v1");
+    expect(v2.value).toEqual(data);
+  });
 
 })
