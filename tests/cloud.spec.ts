@@ -207,6 +207,41 @@ describe('cloudservice', () => {
 
   });
 
+  it("searches by tag", async () => {
+    const s = createSession(false);
+    Config.testMode = true;
+    await s.login("test_21", "qwert12345.");
+    const testData = utf8ToBytes("Welcome, cloud77");
+
+    const e1: CloudElement = await s.setByUniqueTag({
+      uniqueTag: "creationTestTag",
+      tag1: "tag-1",
+      tag2: "tag-2",
+      tag3: "tag-3",
+      head: testData
+    });
+
+    const e2: CloudElement = await s.setByUniqueTag({
+      uniqueTag: "creationTestTag2",
+      tag1: "tag-1",
+      tag2: "tag-21",
+      tag3: "tag-3",
+      head: testData
+    });
+
+    let tt = await s.elementsByTags({tag1: "tag-1", afterSerial: 0});
+    expect(tt.map(x=>x.tag2)).toEqual(["tag-2", "tag-21"]);
+
+    tt = await s.elementsByTags({tag1: "tag-1", afterSerial: e1.serial});
+    expect(tt.map(x=>x.tag2)).toEqual(["tag-21"]);
+    expect(tt.length).toBe(1);
+
+    tt = await s.elementsByTags({tag2: "tag-21"});
+    expect(tt.map(x=>x.tag2)).toEqual(["tag-21"]);
+    expect(tt.length).toBe(1);
+
+  });
+
 
 
   it("registers", async() => {
@@ -230,18 +265,18 @@ describe('cloudservice', () => {
 
 
 
-  it("run tools", async() => {
-    const part1 = Passwords.randomId(49);
-    const part2 = Passwords.randomId(37);
-    const part3 = Passwords.randomId(117);
-    console.log(part1,part2,part3);
-    // const aa : Record<string,number> = {
-    //   kk: 1,
-    //   ll: 3
-    // };
-    // for( const x in ownKeys(aa)) {
-    //   console.log(">> "+x+" -> "+aa[x]);
-    // }
-  });
+  // it("run tools", async() => {
+  //   const part1 = Passwords.randomId(49);
+  //   const part2 = Passwords.randomId(37);
+  //   const part3 = Passwords.randomId(117);
+  //   console.log(part1,part2,part3);
+  //   // const aa : Record<string,number> = {
+  //   //   kk: 1,
+  //   //   ll: 3
+  //   // };
+  //   // for( const x in ownKeys(aa)) {
+  //   //   console.log(">> "+x+" -> "+aa[x]);
+  //   // }
+  // });
 
 });

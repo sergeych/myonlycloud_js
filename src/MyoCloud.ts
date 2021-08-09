@@ -14,7 +14,7 @@ import { ExpiringValue } from "./ExpiringValue";
 import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
 import { MyoElement } from "./MyoElement";
 import { Registry } from "./Registry";
-import { CloudElement } from "./CloudData";
+import { CloudElement, LO, Tags } from "./CloudData";
 import { CloudObject } from "./CloudObject";
 import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { Inbox, InboxDefinitionRecord } from "./Inbox";
@@ -52,6 +52,12 @@ function extractElement(element: CloudElement): CloudElement {
     tag3: element.tag3,
     head: element.head
   }
+}
+
+export interface ElementSearchArgs {
+  tag1?: string,
+  tag2?: string,
+  tag3?: string
 }
 
 // noinspection JSUnusedGlobalSymbols
@@ -464,6 +470,15 @@ export class MyoCloud implements PConnection {
       else throw new Error("can't delete: element has no id (was not created)")
     }
     await this.call("deleteElementsById", {ids});
+  }
+
+  async elementsByTags(args: ElementSearchArgs & LO): Promise<MyoElement[]> {
+    const pp = {limit: 100, offset: 0, ...args};
+    if( !["tag1","tag2","tag3"].some(x => x !== undefined) )
+      throw new Error("at least one tag should be present (could be null but not undefined)");
+    const result = await this.callTo<{ elements?: BossObject[]}>(
+      "getElementsByTags", args as BossObject);
+    return result.elements?.map(e => new MyoElement(this, e)) ?? [];
   }
 
   async* inboxes(): AsyncGenerator<Inbox, void> {
