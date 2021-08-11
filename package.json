@@ -1,6 +1,6 @@
 {
   "name": "myonlycloud",
-  "version": "0.2.4",
+  "version": "0.2.7",
   "description": "myonly.cloud javascript/typescript interface",
   "author": "Sergey Chernov <real.sergeych@gmail.com>",
   "license": "MIT",
@@ -22,8 +22,8 @@
   "dependencies": {
     "dexie": "^3.0.3",
     "isomorphic-fetch": "^3",
-    "unicrypto": "^1.5.6",
-    "uparsecjs": "^0.2.6"
+    "unicrypto": "^1.8.1",
+    "uparsecjs": "^0.2.9"
   },
   "devDependencies": {
     "@babel/parser": "^7.14.0",
