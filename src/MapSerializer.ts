@@ -182,6 +182,7 @@ export class MapSerializer {
 
   /**
    * Unpack boss binary and deserialize its root object or object at some path.
+   * @param allowNotTyped use [[deserializeAny]] instead of [[deserialize]], to restore structures without `$` type tag
    * @param packed binary boss-packed data
    * @param path if present, specify the path inside unpacked data to the object to unpack.
    * @return promise to the unpacked object.
@@ -200,7 +201,7 @@ export class MapSerializer {
       const field = path.shift();
       unpacked = field ? unpacked[field] as BossObject : undefined;
     }
-    if (!unpacked)
+    if (unpacked === undefined)
       throw new MapSerializer.Exception("path not found: " + path.join("."));
     return allowNotTyped ? this.deserializeAny(unpacked) : this.deserialize(unpacked);
   }

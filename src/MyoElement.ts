@@ -19,7 +19,7 @@ export class MyoElement implements CloudElement {
   revision?: number;
   head!: Uint8Array;
 
-  constructor(private cloud: MyoCloud,elementData: BossObject) {
+  constructor(readonly cloud: MyoCloud,elementData: BossObject) {
     this.updateFrom(elementData);
   }
 

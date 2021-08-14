@@ -14,7 +14,7 @@ import { ExpiringValue } from "./ExpiringValue";
 import { AnnotatedKey, hashDigest64Compact } from "./AnnotatedKey";
 import { MyoElement } from "./MyoElement";
 import { Registry } from "./Registry";
-import { CloudElement, LO, Tags } from "./CloudData";
+import { CloudElement, LO } from "./CloudData";
 import { CloudObject } from "./CloudObject";
 import { AnnotatedKeyring } from "./AnnotatedKeyring";
 import { Inbox, InboxDefinitionRecord } from "./Inbox";
@@ -354,6 +354,7 @@ export class MyoCloud implements PConnection {
     catch(x) {
       if( x instanceof RemoteException && x.code == "name_not_available" )
         return "login_in_use";
+      console.error("myonlycloud_js registration unexpected error",x)
     }
     return "error";
   }
@@ -473,7 +474,6 @@ export class MyoCloud implements PConnection {
   }
 
   async elementsByTags(args: ElementSearchArgs & LO): Promise<MyoElement[]> {
-    const pp = {limit: 100, offset: 0, ...args};
     if( !["tag1","tag2","tag3"].some(x => x !== undefined) )
       throw new Error("at least one tag should be present (could be null but not undefined)");
     const result = await this.callTo<{ elements?: BossObject[]}>(
