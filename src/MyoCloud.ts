@@ -280,9 +280,11 @@ export class MyoCloud implements PConnection {
         }
         if (!this.#passwordStorageKey) throw new Error("password storage key is not set, internal error");
         this.#_registry = new Registry(this, this.#passwordStorageKey);
-        await this.#_registry.ready;
         console.log("registry is ready");
+        await this.#_registry.ready;
       }
+      else
+        console.log("Registry already loaded")
       return this.#_registry
     })();
   }
@@ -296,7 +298,7 @@ export class MyoCloud implements PConnection {
   }
 
   private static async newPrivateKey(): Promise<PrivateKey> {
-    return PrivateKey.generate({ strength: Config.testMode ? 2048 : 8192 });
+    return PrivateKey.generate({ strength: Config.testMode ? 2048 : 4096 });
   }
 
   private lastPrivateKey: Promise<PrivateKey> = MyoCloud.newPrivateKey();
