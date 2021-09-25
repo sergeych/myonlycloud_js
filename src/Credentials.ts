@@ -1,4 +1,4 @@
-import { Boss, encode64, PrivateKey, SHA } from "unicrypto";
+import { encode64, PrivateKey, SHA } from "unicrypto";
 import { utf8ToBytes } from "uparsecjs";
 import { AnnotatedKey } from "./AnnotatedKey";
 import { PasswordKeyGenerator } from "./PasswordKeyGenerator";
@@ -61,7 +61,7 @@ export class Credentials {
     const sb: SharedBox = await SharedBox.unpack(encryptedKey);
     const passwordKeys = await Credentials.deriveKeysFromPassword(password);
     await sb.unlockWithKeys(passwordKeys.loginAccessKey);
-    console.log(await Boss.load(await sb.payloadPromise));
+    // console.log(await Boss.load(await sb.payloadPromise));
     return {
       loginKey: await fromBoss(await sb.payloadPromise, "loginKey"),
       storageKey: passwordKeys.storageKey

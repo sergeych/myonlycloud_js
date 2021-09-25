@@ -1,7 +1,7 @@
 import { AnnotatedKey, CloudElement, Config, MapSerializer, MyoCloud, RegistryData } from "../src";
 import { MemorySessionStorage } from "uparsecjs/dist/MemorySessionStorage";
 import { PrivateKey } from "unicrypto";
-import { Passwords, RootConnection, Session, utf8ToBytes } from "uparsecjs";
+import { RootConnection, Session, utf8ToBytes } from "uparsecjs";
 
 function getServiceAddress(useLocal: boolean=false): string {
   return useLocal ? "http://localhost:8094/api/p1" : "https://api.myonly.cloud/api/p1";
@@ -36,7 +36,7 @@ describe('cloudservice', () => {
     });
     expect(cloud.isLoggedIn).toBeUndefined();
     expect(cloud.hasSavedLogin).toBe(false);
-    console.log("pre conn");
+    // console.log("pre conn");
     // await timeout(1000);
     await cloud.connected;
     expect(cloud.isLoggedIn).toBe(false);
@@ -221,7 +221,7 @@ describe('cloudservice', () => {
       head: testData
     });
 
-    const e2: CloudElement = await s.setByUniqueTag({
+    await s.setByUniqueTag({
       uniqueTag: "creationTestTag2",
       tag1: "tag-1",
       tag2: "tag-21",

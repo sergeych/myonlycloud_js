@@ -512,8 +512,7 @@ export class MyoCloud implements PConnection {
 
   private async tryRestoreSession() {
     try {
-      const result = await this.session.call("check");
-      console.log("connected:", result);
+      await this.session.call("check");
       this.fireEvent("connected");
       // TODO: interpret the result, restore login state
       this.loginState = false;
